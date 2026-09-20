@@ -89,7 +89,58 @@ const getCart = async (req, res) => {
   }
 };
 
+const updateCartItemQuantity = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { quantity } = req.body;
+    const userId = req.user.userId;
+
+    // Validate inputs
+    if (quantity === undefined) {
+      return res.status(400).json({ message: 'quantity must be provided.' });
+    }
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return res.status(400).json({ message: 'quantity must be a positive integer.' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid productId format.' });
+    }
+
+    // Find the cart belonging to the logged-in user
+    const cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found.' });
+    }
+
+    // Find the cart item whose product matches productId
+    const itemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: 'Product not found in cart.' });
+    }
+
+    // Update the quantity
+    cart.items[itemIndex].quantity = quantity;
+
+    // Save changes to the database
+    await cart.save();
+
+    // Return the updated cart
+    return res.status(200).json(cart);
+
+  } catch (error) {
+    console.error('Error in updateCartItemQuantity:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
 module.exports = {
   addToCart,
-  getCart
+  getCart,
+  updateCartItemQuantity
 };
