@@ -34,7 +34,7 @@ const createOrder = async (req, res) => {
     let totalAmount = 0;
     const orderItems = [];
 
-    // Construct order items and calculate total amount strictly from DB prices
+    // Construct order items, calculate total amount, and validate stock
     for (const item of cart.items) {
       const productData = item.product;
 
@@ -45,8 +45,16 @@ const createOrder = async (req, res) => {
         });
       }
 
-      const price = productData.price;
       const quantity = item.quantity;
+
+      // Validate stock before proceeding
+      if (quantity > productData.stock) {
+        return res.status(400).json({
+          message: `Insufficient stock for ${productData.name}. Available stock: ${productData.stock}.`
+        });
+      }
+
+      const price = productData.price;
       const name = productData.name;
 
       totalAmount += price * quantity;
@@ -70,6 +78,13 @@ const createOrder = async (req, res) => {
 
     // Save the order to MongoDB
     const savedOrder = await newOrder.save();
+
+    // Reduce product stock in MongoDB now that the order is safely created
+    for (const item of cart.items) {
+      const productData = item.product;
+      productData.stock -= item.quantity;
+      await productData.save();
+    }
 
     // Empty the user's cart array and save it (DO NOT delete the cart doc)
     cart.items = [];
