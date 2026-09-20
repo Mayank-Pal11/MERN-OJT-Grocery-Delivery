@@ -1,5 +1,10 @@
 const express = require('express');
-const { createOrder, getUserOrders, getOrderById } = require('../controllers/orderController');
+const {
+  createOrder,
+  getUserOrders,
+  getOrderById,
+  cancelOrder
+} = require('../controllers/orderController');
 const protect = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -12,5 +17,7 @@ router.get('/', protect, getUserOrders);
 
 // Get specific order by ID (Protected)
 router.get('/:id', protect, getOrderById);
+
+router.patch('/:id/cancel', protect, cancelOrder);
 
 module.exports = router;

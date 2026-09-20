@@ -128,8 +128,53 @@ const getOrderById = async (req, res) => {
   }
 };
 
+const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: 'Invalid order ID format.'
+      });
+    }
+
+    const order = await Order.findOne({
+      _id: id,
+      user: userId
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        message: 'Order not found.'
+      });
+    }
+
+    if (order.status !== 'pending') {
+      return res.status(400).json({
+        message: 'Only pending orders can be cancelled.'
+      });
+    }
+
+    order.status = 'cancelled';
+
+    await order.save();
+
+    return res.status(200).json({
+      message: 'Order cancelled successfully.',
+      order
+    });
+  } catch (error) {
+    console.error('Error in cancelOrder:', error.message);
+    return res.status(500).json({
+      message: 'Server error. Please try again later.'
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
-  getOrderById
+  getOrderById,
+  cancelOrder
 };
