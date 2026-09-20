@@ -139,8 +139,45 @@ const updateCartItemQuantity = async (req, res) => {
   }
 };
 
+const removeCartItem = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const userId = req.user.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid productId format.' });
+    }
+
+    const cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found.' });
+    }
+
+    const itemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: 'Product not found in cart.' });
+    }
+
+    // Remove the item from the array
+    cart.items.splice(itemIndex, 1);
+
+    await cart.save();
+
+    return res.status(200).json(cart);
+
+  } catch (error) {
+    console.error('Error in removeCartItem:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
 module.exports = {
   addToCart,
   getCart,
-  updateCartItemQuantity
+  updateCartItemQuantity,
+  removeCartItem
 };
