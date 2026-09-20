@@ -75,13 +75,27 @@ const getCart = async (req, res) => {
     if (!cart) {
       return res.status(200).json({
         cart: {
-          items: []
+          items: [],
+          subtotal: 0
         }
       });
     }
 
-    // Return the populated cart
-    return res.status(200).json({ cart });
+    // Calculate the subtotal dynamically
+    let subtotal = 0;
+    cart.items.forEach((item) => {
+      // Safely check if the product was successfully populated
+      if (item.product && item.product.price) {
+        subtotal += item.product.price * item.quantity;
+      }
+    });
+
+    // Convert Mongoose document to a plain JavaScript object so we can attach the subtotal
+    const cartData = cart.toObject();
+    cartData.subtotal = subtotal;
+
+    // Return the populated cart with the calculated subtotal
+    return res.status(200).json({ cart: cartData });
 
   } catch (error) {
     console.error('Error in getCart:', error.message);
