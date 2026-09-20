@@ -44,13 +44,22 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, search } = req.query;
     
     // Build the query object
     let query = {};
+    
     if (category) {
       // Case-insensitive match for category
       query.category = { $regex: category, $options: 'i' };
+    }
+
+    if (search) {
+      // Search in name or description (case-insensitive)
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
 
     // Fetch products based on query, sorting by createdAt descending (newest first)
