@@ -44,7 +44,7 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, sort } = req.query;
     
     // Build the query object
     let query = {};
@@ -62,8 +62,18 @@ const getProducts = async (req, res) => {
       ];
     }
 
-    // Fetch products based on query, sorting by createdAt descending (newest first)
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    // Determine sort behavior (default is newest)
+    let sortOption = { createdAt: -1 };
+    if (sort === 'price_asc') {
+      sortOption = { price: 1 };
+    } else if (sort === 'price_desc') {
+      sortOption = { price: -1 };
+    } else if (sort === 'newest') {
+      sortOption = { createdAt: -1 };
+    }
+
+    // Fetch products based on query, sorting dynamically
+    const products = await Product.find(query).sort(sortOption);
 
     // Return HTTP 200 with array of products
     res.status(200).json({
