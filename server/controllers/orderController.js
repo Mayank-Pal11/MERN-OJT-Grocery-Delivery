@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 
@@ -85,6 +86,50 @@ const createOrder = async (req, res) => {
   }
 };
 
+const getUserOrders = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Find all orders for this user and sort newest first
+    const orders = await Order.find({ user: userId }).sort({ createdAt: -1 });
+
+    return res.status(200).json({ orders });
+  } catch (error) {
+    console.error('Error in getUserOrders:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
+const getOrderById = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid order ID format.' });
+    }
+
+    // Find the specific order belonging to this user
+    const order = await Order.findOne({
+      _id: id,
+      user: userId
+    });
+
+    // If order doesn't exist, or belongs to someone else
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    return res.status(200).json({ order });
+  } catch (error) {
+    console.error('Error in getOrderById:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
 module.exports = {
-  createOrder
+  createOrder,
+  getUserOrders,
+  getOrderById
 };
