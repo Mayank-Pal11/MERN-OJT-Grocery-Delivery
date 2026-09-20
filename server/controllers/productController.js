@@ -44,8 +44,17 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    // Fetch all products, sorting by createdAt descending (newest first)
-    const products = await Product.find({}).sort({ createdAt: -1 });
+    const { category } = req.query;
+    
+    // Build the query object
+    let query = {};
+    if (category) {
+      // Case-insensitive match for category
+      query.category = { $regex: category, $options: 'i' };
+    }
+
+    // Fetch products based on query, sorting by createdAt descending (newest first)
+    const products = await Product.find(query).sort({ createdAt: -1 });
 
     // Return HTTP 200 with array of products
     res.status(200).json({
