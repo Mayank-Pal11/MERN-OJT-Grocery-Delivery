@@ -64,6 +64,32 @@ const addToCart = async (req, res) => {
   }
 };
 
+const getCart = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Find the cart and populate the product details
+    const cart = await Cart.findOne({ user: userId }).populate('items.product');
+
+    // If the user doesn't have a cart, return an empty cart object
+    if (!cart) {
+      return res.status(200).json({
+        cart: {
+          items: []
+        }
+      });
+    }
+
+    // Return the populated cart
+    return res.status(200).json({ cart });
+
+  } catch (error) {
+    console.error('Error in getCart:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
 module.exports = {
-  addToCart
+  addToCart,
+  getCart
 };
