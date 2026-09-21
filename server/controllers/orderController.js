@@ -234,11 +234,59 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const getAdminDashboardStats = async (req, res) => {
+  try {
+    const totalOrders = await Order.countDocuments();
+    const pendingOrders = await Order.countDocuments({ status: 'pending' });
+
+    const revenueResult = await Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } }
+    ]);
+
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+
+    return res.status(200).json({
+      stats: {
+        totalOrders,
+        pendingOrders,
+        totalRevenue: Math.round(totalRevenue * 100) / 100
+      }
+    });
+  } catch (error) {
+    console.error('Error in getAdminDashboardStats:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
+const getAdminOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid order ID format.' });
+    }
+
+    const order = await Order.findById(id).populate('user', 'name email').populate('items.product');
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    return res.status(200).json({ order });
+  } catch (error) {
+    console.error('Error in getAdminOrderById:', error.message);
+    return res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getOrderById,
   cancelOrder,
   getAdminOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getAdminDashboardStats,
+  getAdminOrderById
 };

@@ -1,9 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
 import { PackagePlus, Settings, ListOrdered, TrendingUp, IndianRupee, Clock, Package } from 'lucide-react';
+import { getProducts } from '../api/productApi';
+import { getAdminDashboardStats } from '../api/orderApi';
 
 const AdminDashboard = () => {
+  const [stats, setStats] = useState({ totalOrders: 0, pendingOrders: 0, totalRevenue: 0 });
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [productsData, statsData] = await Promise.all([
+          getProducts(),
+          getAdminDashboardStats()
+        ]);
+        
+        // Handle variations in API response formats safely
+        const productsList = productsData?.products || (Array.isArray(productsData) ? productsData : []);
+        setTotalProducts(productsList.length);
+        
+        if (statsData?.stats) {
+          setStats(statsData.stats);
+        }
+        setError(null);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load dashboard data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDashboardData();
+  }, []);
   return (
     <div className="min-h-screen bg-[#FFF8E8] font-sans flex flex-col md:flex-row">
       <AdminSidebar />
@@ -17,52 +50,67 @@ const AdminDashboard = () => {
             <p className="text-gray-600 mt-1">Overview of your GROVIA store</p>
           </div>
 
-          {/* Stats Cards (Placeholders) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {/* Stat 1 */}
-            <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-[#5A123E]/10 rounded-full flex items-center justify-center shrink-0">
-                <Package className="w-6 h-6 text-[#5A123E]" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-500 uppercase">Total Products</p>
-                <p className="text-2xl font-extrabold text-[#2B1723]">24</p>
-              </div>
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-center shadow-sm">
+              {error}
             </div>
+          )}
 
-            {/* Stat 2 */}
-            <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-[#F6C96A]/20 rounded-full flex items-center justify-center shrink-0">
-                <ListOrdered className="w-6 h-6 text-[#2B1723]" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-500 uppercase">Total Orders</p>
-                <p className="text-2xl font-extrabold text-[#2B1723]">12</p>
+          {/* Stats Cards */}
+          {loading ? (
+            <div className="bg-[#FFFDF5] rounded-3xl p-12 shadow-sm border border-[#EBDDBF]/50 text-center mb-10">
+              <div className="text-[#5A123E] font-bold animate-pulse text-lg">
+                Loading dashboard...
               </div>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              {/* Stat 1 */}
+              <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-[#5A123E]/10 rounded-full flex items-center justify-center shrink-0">
+                  <Package className="w-6 h-6 text-[#5A123E]" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase">Total Products</p>
+                  <p className="text-2xl font-extrabold text-[#2B1723]">{totalProducts}</p>
+                </div>
+              </div>
 
-            {/* Stat 3 */}
-            <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                <Clock className="w-6 h-6 text-blue-600" />
+              {/* Stat 2 */}
+              <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-[#F6C96A]/20 rounded-full flex items-center justify-center shrink-0">
+                  <ListOrdered className="w-6 h-6 text-[#2B1723]" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase">Total Orders</p>
+                  <p className="text-2xl font-extrabold text-[#2B1723]">{stats.totalOrders || 0}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-bold text-gray-500 uppercase">Pending Orders</p>
-                <p className="text-2xl font-extrabold text-[#2B1723]">5</p>
-              </div>
-            </div>
 
-            {/* Stat 4 */}
-            <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-[#6E8B45]/10 rounded-full flex items-center justify-center shrink-0">
-                <IndianRupee className="w-6 h-6 text-[#6E8B45]" />
+              {/* Stat 3 */}
+              <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                  <Clock className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase">Pending Orders</p>
+                  <p className="text-2xl font-extrabold text-[#2B1723]">{stats.pendingOrders || 0}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-bold text-gray-500 uppercase">Revenue</p>
-                <p className="text-2xl font-extrabold text-[#2B1723]">₹18,450</p>
+
+              {/* Stat 4 */}
+              <div className="bg-[#FFFDF5] p-6 rounded-2xl shadow-sm border border-[#EBDDBF]/50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 bg-[#6E8B45]/10 rounded-full flex items-center justify-center shrink-0">
+                  <IndianRupee className="w-6 h-6 text-[#6E8B45]" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-500 uppercase">Revenue</p>
+                  <p className="text-2xl font-extrabold text-[#2B1723]">₹{stats.totalRevenue?.toLocaleString() || 0}</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             

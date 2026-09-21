@@ -26,3 +26,13 @@ export const updateOrderStatus = async (id, status) => {
   });
   return response.data;
 };
+
+export const getAdminDashboardStats = async () => {
+  const response = await api.get('/orders/admin/dashboard-stats');
+  return response.data;
+};
+
+export const getAdminOrderById = async (orderId) => {
+  const response = await api.get(`/orders/admin/${orderId}`);
+  return response.data;
+};
