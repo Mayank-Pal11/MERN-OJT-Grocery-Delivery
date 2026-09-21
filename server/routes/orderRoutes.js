@@ -3,11 +3,18 @@ const {
   createOrder,
   getUserOrders,
   getOrderById,
-  cancelOrder
+  cancelOrder,
+  getAdminOrders,
+  updateOrderStatus
 } = require('../controllers/orderController');
 const protect = require('../middleware/authMiddleware');
+const admin = require('../middleware/adminMiddleware');
 
 const router = express.Router();
+
+// Admin routes (must be before /:id)
+router.get('/admin', protect, admin, getAdminOrders);
+router.patch('/admin/:id/status', protect, admin, updateOrderStatus);
 
 // Create a new order (Protected)
 router.post('/', protect, createOrder);

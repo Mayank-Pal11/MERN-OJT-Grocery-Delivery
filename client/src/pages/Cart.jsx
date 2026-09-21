@@ -209,11 +209,12 @@ const Cart = () => {
                   </span>
                 </div>
 
-                <button 
+                <Link 
+                  to="/checkout"
                   className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-lg font-bold text-[#42102F] bg-[#F6C96A] hover:bg-[#F2B94A] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F6C96A] transition-all hover:-translate-y-0.5 duration-300"
                 >
                   Proceed to Checkout
-                </button>
+                </Link>
                 
                 <div className="mt-6 text-center">
                   <Link to="/" className="text-sm font-bold text-[#5A123E] hover:text-[#42102F] transition-colors uppercase tracking-wider">

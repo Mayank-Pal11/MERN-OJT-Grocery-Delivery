@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getCart } from '../api/cartApi';
 import { createRazorpayOrder, verifyRazorpayPayment } from '../api/paymentApi';
 
 const Checkout = () => {
+  const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,6 +103,11 @@ const Checkout = () => {
             const verificationResult = await verifyRazorpayPayment(verificationData);
             setSuccessMsg('Payment successful! Your order has been placed.');
             console.log('Order created:', verificationResult);
+            
+            // Navigate to confirmation page, passing the order state
+            navigate('/order-confirmation', {
+              state: { order: verificationResult.order }
+            });
           } catch (err) {
             setError(err.response?.data?.message || 'Payment verification failed. Please try again.');
           }
