@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import CategoryCard from '../components/CategoryCard';
 import ProductCard from '../components/ProductCard';
+import { getProducts } from '../api/productApi';
 
 const categories = [
   { name: 'Chips & Munchies', image: 'https://cdn-icons-png.flaticon.com/512/2553/2553691.png' },
@@ -11,37 +12,6 @@ const categories = [
   { name: 'Dairy & Bread', image: 'https://cdn-icons-png.flaticon.com/512/3050/3050117.png' },
   { name: 'Fresh Produce', image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
   { name: 'Atta, Rice & Dal', image: 'https://cdn-icons-png.flaticon.com/512/2821/2821815.png' },
-];
-
-const trendingProducts = [
-  {
-    id: 1,
-    name: "Lays Classic Salted Potato Chips",
-    description: "90g",
-    price: 29,
-    image: "https://cdn-icons-png.flaticon.com/512/2553/2553691.png"
-  },
-  {
-    id: 2,
-    name: "Coca-Cola Zero Sugar Soda",
-    description: "500ml",
-    price: 74,
-    image: "https://cdn-icons-png.flaticon.com/512/2405/2405597.png"
-  },
-  {
-    id: 3,
-    name: "Oreo Original Chocolate Sandwich Biscuits",
-    description: "120g",
-    price: 19,
-    image: "https://cdn-icons-png.flaticon.com/512/3173/3173531.png"
-  },
-  {
-    id: 4,
-    name: "Maggi 2-Minute Instant Noodles",
-    description: "70g",
-    price: 65,
-    image: "https://cdn-icons-png.flaticon.com/512/3480/3480796.png"
-  }
 ];
 
 const freshPicks = [
@@ -76,6 +46,26 @@ const freshPicks = [
 ];
 
 const Home = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getProducts();
+        // Extract the products array as returned by the backend format
+        setProducts(data.products || []);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load products. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <div className="min-h-screen font-sans bg-[#FFF8E8] flex flex-col">
       <Navbar />
@@ -125,16 +115,31 @@ const Home = () => {
           </div>
         </section>
 
-        {/* 4. Trending This Week */}
+        {/* 4. Trending This Week (Dynamic from Backend) */}
         <section className="mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#2B1723] mb-6 tracking-tight">
             Trending This Week
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {trendingProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-lg text-[#5A123E] font-medium animate-pulse">Loading products...</div>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 text-red-500 p-4 rounded-xl border border-red-100 text-center">
+              {error}
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              No products available at the moment.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {products.map((product) => (
+                <ProductCard key={product._id || product.id} product={product} />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* 5. Promotional Section */}
