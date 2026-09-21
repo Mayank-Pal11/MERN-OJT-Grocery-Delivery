@@ -1,16 +1,23 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Store, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Package, ShoppingBag, Store, LogOut, Users } from 'lucide-react';
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+    { name: 'Users', path: '/admin/users', icon: Users },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   return (
     <aside className="w-full md:w-64 bg-[#5A123E] text-white flex flex-col shadow-md md:min-h-screen">
@@ -61,9 +68,10 @@ const AdminSidebar = () => {
           <Store className="w-5 h-5" />
           View Store
         </Link>
-        {/* Placeholder for future logout functionality */}
+        {/* Logout functionality */}
         <button 
-          className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-300 hover:bg-[#42102F] hover:text-red-200 transition-all text-left whitespace-nowrap md:w-full"
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-300 hover:bg-[#42102F] hover:text-red-200 transition-all text-left whitespace-nowrap md:w-full outline-none"
         >
           <LogOut className="w-5 h-5" />
           Logout
