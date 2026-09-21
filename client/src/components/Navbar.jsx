@@ -1,7 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, User, ShoppingCart, Clock } from 'lucide-react';
+import { getCart } from '../api/cartApi';
 
 const Navbar = () => {
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const data = await getCart();
+        const items = data.cart?.items || [];
+        const count = items.reduce((total, item) => total + item.quantity, 0);
+        setCartCount(count);
+      } catch (err) {
+        // Quietly fail if not logged in or error occurs
+        setCartCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, []);
+
   return (
     <nav className="bg-[#5A123E] text-white px-4 py-3 sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4">
@@ -16,7 +35,7 @@ const Navbar = () => {
             <User className="w-6 h-6 cursor-pointer" />
             <div className="relative cursor-pointer">
               <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-[10px] text-[#2B1723] font-bold rounded-full h-4 w-4 flex items-center justify-center">0</span>
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-[10px] text-[#2B1723] font-bold rounded-full h-4 w-4 flex items-center justify-center">{cartCount}</span>
             </div>
           </div>
         </div>
@@ -42,7 +61,7 @@ const Navbar = () => {
           <User className="w-6 h-6 cursor-pointer hover:text-[#F6C96A] transition-colors" />
           <div className="relative cursor-pointer hover:text-[#F6C96A] transition-colors">
             <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs text-[#2B1723] font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs text-[#2B1723] font-bold rounded-full h-5 w-5 flex items-center justify-center">{cartCount}</span>
           </div>
         </div>
 
