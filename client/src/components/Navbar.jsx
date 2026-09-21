@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, User, ShoppingCart, Clock } from 'lucide-react';
 import { getCart } from '../api/cartApi';
 
@@ -19,6 +20,12 @@ const Navbar = () => {
     };
 
     fetchCartCount();
+
+    window.addEventListener('cartUpdated', fetchCartCount);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', fetchCartCount);
+    };
   }, []);
 
   return (
@@ -27,16 +34,20 @@ const Navbar = () => {
         
         {/* Mobile Top Row / Desktop Logo */}
         <div className="flex items-center justify-between w-full md:w-auto">
-          <div className="text-2xl font-bold tracking-wider flex items-center gap-1 cursor-pointer shrink-0">
+          <Link to="/" className="text-2xl font-bold tracking-wider flex items-center gap-1 cursor-pointer shrink-0">
             GROVIA
-          </div>
+          </Link>
           
           <div className="md:hidden flex items-center gap-5">
-            <User className="w-6 h-6 cursor-pointer" />
-            <div className="relative cursor-pointer">
-              <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-[10px] text-[#2B1723] font-bold rounded-full h-4 w-4 flex items-center justify-center">{cartCount}</span>
-            </div>
+            <Link to="/orders">
+              <User className="w-6 h-6 cursor-pointer" />
+            </Link>
+            <Link to="/cart">
+              <div className="relative cursor-pointer">
+                <ShoppingCart className="w-6 h-6" />
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-[10px] text-[#2B1723] font-bold rounded-full h-4 w-4 flex items-center justify-center">{cartCount}</span>
+              </div>
+            </Link>
           </div>
         </div>
 
@@ -58,11 +69,15 @@ const Navbar = () => {
 
         {/* Desktop User & Cart */}
         <div className="hidden md:flex items-center gap-6 md:ml-4 shrink-0">
-          <User className="w-6 h-6 cursor-pointer hover:text-[#F6C96A] transition-colors" />
-          <div className="relative cursor-pointer hover:text-[#F6C96A] transition-colors">
-            <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs text-[#2B1723] font-bold rounded-full h-5 w-5 flex items-center justify-center">{cartCount}</span>
-          </div>
+          <Link to="/orders">
+            <User className="w-6 h-6 cursor-pointer hover:text-[#F6C96A] transition-colors" />
+          </Link>
+          <Link to="/cart">
+            <div className="relative cursor-pointer hover:text-[#F6C96A] transition-colors">
+              <ShoppingCart className="w-6 h-6" />
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs text-[#2B1723] font-bold rounded-full h-5 w-5 flex items-center justify-center">{cartCount}</span>
+            </div>
+          </Link>
         </div>
 
       </div>
