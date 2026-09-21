@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
+import { addToCart } from '../api/cartApi';
 
 const ProductCard = ({ product }) => {
   const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleAdd = () => {
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+  const handleAdd = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Use product._id because MongoDB uses _id
+      await addToCart(product._id, 1);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add item');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,15 +55,21 @@ const ProductCard = ({ product }) => {
           </span>
           <button
             onClick={handleAdd}
+            disabled={loading || added}
             className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 ${
               added 
                 ? 'bg-[#6E8B45] text-white shadow-md'
-                : 'bg-[#5A123E] text-white hover:bg-[#42102F] shadow-sm'
+                : 'bg-[#5A123E] text-white hover:bg-[#42102F] shadow-sm disabled:opacity-70 disabled:cursor-not-allowed'
             }`}
           >
-            {added ? 'ADDED ✓' : '+ ADD'}
+            {loading ? 'ADDING...' : added ? 'ADDED ✓' : '+ ADD'}
           </button>
         </div>
+        {error && (
+          <div className="mt-2 text-xs text-red-500 font-medium text-right">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );
