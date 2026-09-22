@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, ShoppingCart, Clock } from 'lucide-react';
+import { motion } from 'motion/react';
 import { getCart } from '../api/cartApi';
 
 const Navbar = () => {
@@ -73,10 +74,18 @@ const Navbar = () => {
             <User className="w-6 h-6 cursor-pointer hover:text-[#F6C96A] transition-colors" />
           </Link>
           <Link to="/cart">
-            <div className="relative cursor-pointer hover:text-[#F6C96A] transition-colors">
+            <motion.div 
+              className="relative cursor-pointer hover:text-[#F6C96A] transition-colors"
+              onMouseEnter={() => window.dispatchEvent(new Event('cartHoverStart'))}
+              onMouseLeave={() => window.dispatchEvent(new Event('cartHoverEnd'))}
+              whileHover={{ scale: 1.1, y: -4 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
               <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs text-[#2B1723] font-bold rounded-full h-5 w-5 flex items-center justify-center">{cartCount}</span>
-            </div>
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-xs text-[#2B1723] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            </motion.div>
           </Link>
         </div>
 
